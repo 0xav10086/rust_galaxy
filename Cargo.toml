@@ -1,0 +1,12 @@
+[package]
+name = "Rust_Gravity_3D"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+winit = "0.29.10"
+glow = "0.13.1"
+glm = "0.2.3"
+bytemuck = "1.14"
+glutin = "0.32.3"
+glutin-winit = "0.5.0"

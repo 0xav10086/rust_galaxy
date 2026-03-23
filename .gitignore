@@ -1,0 +1,16 @@
+# 编译输出目录 (Cargo 会把所有编译好的文件放在这里，体积很大，绝对不能提交)
+/target/
+
+# Cargo 运行 rustfmt 时可能产生的备份文件
+**/*.rs.bk
+
+# 编辑器/IDE 配置和缓存
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 操作系统和同步工具产生的隐藏文件
+Thumbs.db
+.DS_Store
+@eaDir/
