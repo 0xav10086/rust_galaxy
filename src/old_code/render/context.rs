@@ -1,21 +1,22 @@
-use winit::{
-    event_loop::EventLoop,
-};
+use winit::event_loop::EventLoop;
 use glutin::{
     config::ConfigTemplateBuilder,
     context::{ContextAttributesBuilder, PossiblyCurrentContext},
     prelude::*,
     surface::{Surface, WindowSurface},
-    display::DisplayApiPreference, // Corrected import for DisplayApiPreference
+    display::GetGlDisplay,
 };
+use glutin_winit::{DisplayBuilder, GlWindow};
 use glow::Context as GlowContext;
 use glow::HasContext;
-use winit::raw_window_handle::{HasWindowHandle, HasDisplayHandle}; // Corrected import path
-use std::num::NonZeroU32;
+
+// [新增] 屏蔽 winit 推荐使用 0.6 版本句柄的警告
+#[allow(deprecated)]
+use winit::raw_window_handle::HasRawWindowHandle; 
 use std::ffi::CString;
 
 pub struct Context {
-    pub gl: GlowContext, // Corrected type name
+    pub gl: GlowContext, 
     pub window: winit::window::Window,
     pub context: PossiblyCurrentContext,
     pub surface: Surface<WindowSurface>,
@@ -23,48 +24,40 @@ pub struct Context {
 
 impl Context {
     pub fn new(event_loop: &EventLoop<()>) -> Self {
-        let window = winit::window::WindowBuilder::new()
-            .with_title("Rust Galaxy")
-            .build(event_loop)
-            .expect("Failed to create window");
-        
-        let display_handle = window.display_handle().expect("Failed to get display handle");
-        let window_handle = window.window_handle().expect("Failed to get window handle");
-        
-        let display = unsafe {
-            glutin::display::Display::new(display_handle.as_raw(), DisplayApiPreference::None) // Corrected path
-                .expect("Failed to create display")
-        };
-        
+        let window_builder = winit::window::WindowBuilder::new()
+            .with_title("Rust Galaxy");
+
         let template = ConfigTemplateBuilder::new()
             .with_alpha_size(8)
-            .with_transparency(true)
-            .build();
+            .with_transparency(true);
 
-        let gl_config = unsafe {
-            display.find_configs(template)
-                .expect("Failed to find configs")
-                .reduce(|accum, config| {
+        let display_builder = DisplayBuilder::new().with_window_builder(Some(window_builder));
+
+        let (window, gl_config) = display_builder
+            .build(event_loop, template, |mut configs| {
+                configs.reduce(|accum, config| {
                     if config.supports_transparency().unwrap_or(false) && !accum.supports_transparency().unwrap_or(false) {
                         config
                     } else {
                         accum
                     }
-                })
-                .expect("No config found")
-        };
+                }).expect("No config found")
+            })
+            .expect("Failed to create display");
 
-        let (width, height) = window.inner_size().into();
-        let width = NonZeroU32::new(width).unwrap_or(NonZeroU32::new(1).unwrap());
-        let height = NonZeroU32::new(height).unwrap_or(NonZeroU32::new(1).unwrap());
+        let window = window.expect("Failed to create window");
+        
+        let display = gl_config.display(); 
 
-        let surface_attributes = glutin::surface::SurfaceAttributesBuilder::<WindowSurface>::new()
-            .build(window_handle.as_raw(), width, height);
-
+        let surface_attributes = window.build_surface_attributes(Default::default());
         let surface = unsafe {
             display.create_window_surface(&gl_config, &surface_attributes)
                 .expect("Failed to create GL surface")
         };
+
+        // [修改] 添加 .unwrap() 提取真实的句柄，并屏蔽弃用警告
+        #[allow(deprecated)]
+        let raw_handle = window.raw_window_handle().unwrap();
 
         let context_attributes = ContextAttributesBuilder::new()
             .with_profile(glutin::context::GlProfile::Core)
@@ -72,7 +65,7 @@ impl Context {
                 major: 3,
                 minor: 3,
             })))
-            .build(Some(window_handle.as_raw()));
+            .build(Some(raw_handle)); // 传入解包后的句柄
 
         let context = unsafe {
             display.create_context(&gl_config, &context_attributes)
