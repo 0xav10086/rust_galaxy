@@ -7,7 +7,7 @@ pub const INIT_MASS: f32 = 5.0 * 1e20 / 5.0;
 
 pub const SCREEN_WIDTH: u32 = 800;
 pub const SCREEN_HEIGHT: u32 = 600;
-pub const CAMERA_SPEED: f32 = 1000.0;
+pub const CAMERA_SPEED: f32 = 50000.0;
 pub const MOUSE_SENSITIVITY: f32 = 0.1;
 
 pub const TIME_STEP: f32 = 94.0;

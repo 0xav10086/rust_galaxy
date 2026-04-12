@@ -1,6 +1,4 @@
 use glow::HasContext;
-use std::ffi::CString;
-use std::ptr;
 
 pub struct Shader {
     program: glow::Program,

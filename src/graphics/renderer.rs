@@ -21,6 +21,16 @@ impl Renderer {
             let grid_vao = gl.create_vertex_array().unwrap();
             let grid_vbo = gl.create_buffer().unwrap();
             
+            // --- 新增：绑定 VAO 和 VBO 并设置顶点属性指针 ---
+            gl.bind_vertex_array(Some(grid_vao));
+            gl.bind_buffer(glow::ARRAY_BUFFER, Some(grid_vbo));
+            
+            gl.enable_vertex_attrib_array(0);
+            gl.vertex_attrib_pointer_f32(0, 3, glow::FLOAT, false, std::mem::size_of::<Vertex>() as i32, 0);
+            
+            gl.bind_vertex_array(None);
+            // --------------------------------------------------
+
             Renderer {
                 gl,
                 grid_vao,
@@ -80,6 +90,7 @@ impl Renderer {
     pub fn draw_grid(&self, shader: &super::shader::Shader, vertices: &[Vertex]) {
         unsafe {
             shader.set_uniform_mat4(&self.gl, "model", &Mat4::IDENTITY);
+            shader.set_uniform_vec4(&self.gl, "objectColor", &glam::Vec4::new(1.0, 1.0, 1.0, 0.25));
             self.update_vbo(self.grid_vbo, vertices);
             
             self.gl.bind_vertex_array(Some(self.grid_vao));

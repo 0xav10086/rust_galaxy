@@ -27,7 +27,7 @@ impl Object {
         color: Vec4,
     ) -> Self {
         let radius = Self::calculate_radius(mass, density);
-        let vertices = Self::generate_sphere_vertices(radius);
+        let vertices = Self::generate_sphere_vertices(1.0);
         let vertex_count = vertices.len();
         
         unsafe {
@@ -66,15 +66,15 @@ impl Object {
     fn calculate_radius(mass: f32, density: f32) -> f32 {
         let volume = mass / density;
         let radius = (3.0 * volume / (4.0 * PI)).powf(1.0 / 3.0);
-        radius / 100000.0
+        radius / 10000.0 // Increased visual size (1 unit = 10km for visualization)
     }
     
     fn generate_sphere_vertices(radius: f32) -> Vec<Vertex> {
         let mut vertices = Vec::new();
-        let stacks = 10;
-        let sectors = 10;
+        let stacks = 20;
+        let sectors = 20;
         
-        for i in 0..=stacks {
+        for i in 0..stacks {
             let theta1 = (i as f32 / stacks as f32) * PI;
             let theta2 = ((i + 1) as f32 / stacks as f32) * PI;
             
@@ -107,12 +107,12 @@ impl Object {
         )
     }
     
-    pub fn update_position(&mut self, _delta_time: f32) {
-        self.position += self.velocity / crate::constants::TIME_STEP;
+    pub fn update_position(&mut self, delta_time: f32) {
+        self.position += self.velocity * delta_time;
     }
     
-    pub fn apply_acceleration(&mut self, acceleration: Vec3, _delta_time: f32) {
-        self.velocity += acceleration / crate::constants::ACC_STEP;
+    pub fn apply_acceleration(&mut self, acceleration: Vec3, delta_time: f32) {
+        self.velocity += acceleration * delta_time;
     }
     
     pub fn update_radius(&mut self) {
@@ -120,7 +120,7 @@ impl Object {
     }
     
     pub fn update_vertices(&self, gl: &glow::Context) {
-        let vertices = Self::generate_sphere_vertices(self.radius);
+        let vertices = Self::generate_sphere_vertices(1.0);
         unsafe {
             gl.bind_buffer(glow::ARRAY_BUFFER, Some(self.vbo));
             gl.buffer_data_u8_slice(
@@ -134,6 +134,6 @@ impl Object {
 
 impl Drop for Object {
     fn drop(&mut self) {
-        // OpenGL 资源需要在合适的上下文中删除，这里简化处理
+        // OpenGL resources should be deleted here in a real app
     }
 }

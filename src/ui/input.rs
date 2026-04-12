@@ -1,5 +1,5 @@
-use winit::event::{ElementState, WindowEvent, MouseButton, MouseScrollDelta};
-use winit::keyboard::{KeyCode, PhysicalKey};
+use winit::event::ElementState;
+use winit::keyboard::KeyCode;
 use crate::graphics::camera::{Camera, CameraMovement};
 
 pub struct InputHandler {
@@ -26,16 +26,38 @@ impl InputHandler {
         let pressed = state == ElementState::Pressed;
         
         match key {
-            KeyCode::KeyW if pressed => camera.process_keyboard(CameraMovement::Forward, delta_time, camera_speed),
-            KeyCode::KeyS if pressed => camera.process_keyboard(CameraMovement::Backward, delta_time, camera_speed),
-            KeyCode::KeyA if pressed => camera.process_keyboard(CameraMovement::Left, delta_time, camera_speed),
-            KeyCode::KeyD if pressed => camera.process_keyboard(CameraMovement::Right, delta_time, camera_speed),
-            KeyCode::Space if pressed => camera.process_keyboard(CameraMovement::Up, delta_time, camera_speed),
-            KeyCode::ShiftLeft if pressed => camera.process_keyboard(CameraMovement::Down, delta_time, camera_speed),
+            KeyCode::KeyW if pressed => {
+                println!("Input: W Pressed (Forward)");
+                camera.process_keyboard(CameraMovement::Forward, delta_time, camera_speed);
+            }
+            KeyCode::KeyS if pressed => {
+                println!("Input: S Pressed (Backward)");
+                camera.process_keyboard(CameraMovement::Backward, delta_time, camera_speed);
+            }
+            KeyCode::KeyA if pressed => {
+                println!("Input: A Pressed (Left)");
+                camera.process_keyboard(CameraMovement::Left, delta_time, camera_speed);
+            }
+            KeyCode::KeyD if pressed => {
+                println!("Input: D Pressed (Right)");
+                camera.process_keyboard(CameraMovement::Right, delta_time, camera_speed);
+            }
+            KeyCode::Space if pressed => {
+                println!("Input: Space Pressed (Up)");
+                camera.process_keyboard(CameraMovement::Up, delta_time, camera_speed);
+            }
+            KeyCode::ShiftLeft if pressed => {
+                println!("Input: Shift Pressed (Down)");
+                camera.process_keyboard(CameraMovement::Down, delta_time, camera_speed);
+            }
             KeyCode::KeyK if pressed => self.pause = true,
             KeyCode::KeyK if state == ElementState::Released => self.pause = false,
             KeyCode::KeyQ if pressed => self.running = false,
             _ => {}
+        }
+        
+        if pressed {
+            println!("Camera Position: {:?}", camera.position);
         }
     }
     
